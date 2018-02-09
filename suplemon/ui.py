@@ -358,6 +358,9 @@ class UI:
         # Restore render blocking
         self.app.block_rendering = blocking
 
+        # Invalidate state of bottom statusbar
+        self.bar_bottom.force_redraw()
+
         return out
 
     def query(self, text, initial=""):
