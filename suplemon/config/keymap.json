@@ -59,5 +59,6 @@
     {"keys": ["ctrl+right"],       "command": "jump_right"},
     {"keys": ["ctrl+up"],          "command": "jump_up"},
     {"keys": ["ctrl+down"],        "command": "jump_down"},
-    {"keys": ["ctrl+t"],           "command": "strip"}
+    {"keys": ["ctrl+t"],           "command": "strip"},
+    {"keys": ["ctrl+l"],           "command": "jump_next_lint_warning"}
 ]

@@ -26,6 +26,22 @@ class Linter(Module):
         self.bind_event_after("save_file_as", self.lint_current_file)
         self.bind_event_after("reload_file", self.lint_current_file)
         self.bind_event_after("open_file", self.lint_current_file)
+        # Jump to next lint warning
+        self.bind_event_before("jump_next_lint_warning", self.jump_next_lint_warning)
+
+    def jump_next_lint_warning(self, *args, **kwargs):
+        editor = self.app.get_file().get_editor()
+        cursor = editor.get_cursor()
+        if len(editor.cursors) > 1:
+            self.app.set_status("lintjump disabled for multiple cursors")
+            return True
+        line_no = cursor.y + 1
+        for index, line in enumerate(editor.lines[line_no:]):
+            if hasattr(line, "linting") and line.linting:
+                editor.go_to_pos(line_no + index + 1)
+                return True
+        self.app.set_status("No more lint warnings after line %i" % line_no)
+        return True
 
     def run(self, app, editor, args):
         """Run the linting command."""

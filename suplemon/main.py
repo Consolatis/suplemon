@@ -327,6 +327,11 @@ class App:
             return True
         elif operation in self.modules.modules.keys():
             self.run_module(operation)
+        elif operation is not None:
+            cancel = self.trigger_event_before(operation)
+            if not cancel:
+                self.trigger_event_after(operation)
+            return cancel
 
         return False
 
