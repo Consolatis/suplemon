@@ -656,16 +656,22 @@ class BaseViewer:
         """Handle input."""
         if event.type == "mouse":
             return False
-        key = event.key_code
-        name = event.key_name
-        # Try match a key to a method and call it
 
+        # Try match a key to a method and call it
         key_bindings = self.get_key_bindings()
         operation = None
-        if key in key_bindings:
-            operation = key_bindings[key]
-        elif name in key_bindings:
-            operation = key_bindings[name]
+        if event.key_code in key_bindings:
+            key = event.key_code
+        elif event.key_name in key_bindings:
+            key = event.key_name
+        else:
+            return False
+        binding = key_bindings[key]
+        #self.logger.info("binding: %s" % str(binding))
+        operation = binding.get('command', None)
+        #self.logger.info("operation: %s" % str(operation))
+        kwargs = binding.get('args', {})
+
         if operation:
             self.run_operation(operation)
             return True
@@ -673,6 +679,7 @@ class BaseViewer:
 
     def run_operation(self, operation):
         """Run an editor core operation."""
+        #self.logger.info("run_operation with operation being '%s'" % operation)
         if operation in self.operations:
             cancel = self.app.trigger_event_before(operation)
             if cancel:

@@ -29,18 +29,31 @@ class Linter(Module):
         # Jump to next lint warning
         self.bind_event_before("jump_next_lint_warning", self.jump_next_lint_warning)
 
-    def jump_next_lint_warning(self, *args, **kwargs):
+    def jump_next_lint_warning(self, command, forward=True, wrap=True):
+        self.logger.info("lintjump with command %s and forward: %s" % (command, forward))
         editor = self.app.get_file().get_editor()
-        cursor = editor.get_cursor()
         if len(editor.cursors) > 1:
             self.app.set_status("lintjump disabled for multiple cursors")
             return True
-        line_no = cursor.y + 1
-        for index, line in enumerate(editor.lines[line_no:]):
+
+        line_no = editor.get_cursor().y + 1
+        if forward:
+            lines = editor.lines[line_no:]
+        else:
+            lines = editor.lines[:line_no][::-1]
+
+        for index, line in enumerate(lines):
             if hasattr(line, "linting") and line.linting:
-                editor.go_to_pos(line_no + index + 1)
+                if forward:
+                    editor.go_to_pos(line_no + index + 1)
+                else:
+                    editor.go_to_pos(line_no - index)
                 return True
-        self.app.set_status("No more lint warnings after line %i" % line_no)
+
+        if forward:
+            self.app.set_status("No more lint warnings after line %i" % line_no)
+        else:
+            self.app.set_status("No more lint warnings before line %i" % line_no)
         return True
 
     def run(self, app, editor, args):

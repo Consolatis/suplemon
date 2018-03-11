@@ -60,5 +60,6 @@
     {"keys": ["ctrl+up"],          "command": "jump_up"},
     {"keys": ["ctrl+down"],        "command": "jump_down"},
     {"keys": ["ctrl+t"],           "command": "strip"},
-    {"keys": ["ctrl+l"],           "command": "jump_next_lint_warning"}
+    {"keys": ["ctrl+l"],           "command": "jump_next_lint_warning", "args": { "forward": true } },
+    {"keys": ["ctrl+b"],           "command": "jump_next_lint_warning", "args": { "forward": false } }
 ]

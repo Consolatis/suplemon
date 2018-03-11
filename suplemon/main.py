@@ -230,7 +230,7 @@ class App:
         bindings = {}
         for binding in self.config.keymap:
             for key in binding["keys"]:
-                bindings[key] = binding["command"]
+                bindings[key] = binding
         return bindings
 
     def get_event_bindings(self):
@@ -318,19 +318,29 @@ class App:
 
         operation = None
         if event.key_name in key_bindings.keys():
-            operation = key_bindings[event.key_name]
+            key = event.key_name
         elif event.key_code in key_bindings.keys():
-            operation = key_bindings[event.key_code]
+            key = event.key_code
+        else:
+            return False
+
+        binding = key_bindings[key]
+        operation = binding.get('command', None)
+        kwargs = binding.get('args', {})
+        #self.logger.info("binding: %s" % str(binding))
+        #self.logger.info("operation: %s" % operation)
+        #self.logger.info("kwargs: %s" % str(kwargs))
 
         if operation in self.operations.keys():
             self.run_operation(operation)
             return True
         elif operation in self.modules.modules.keys():
             self.run_module(operation)
+            return True
         elif operation is not None:
-            cancel = self.trigger_event_before(operation)
+            cancel = self.trigger_event_before(operation, **kwargs)
             if not cancel:
-                self.trigger_event_after(operation)
+                self.trigger_event_after(operation, **kwargs)
             return cancel
 
         return False
@@ -498,6 +508,8 @@ class App:
         if hasattr(operation, "__call__"):
             return operation()
 
+        #self.logger.info("run_operation with operation being '%s'" % operation)
+
         if operation in self.operations.keys():
             cancel = self.trigger_event_before(operation)
             if not cancel:
@@ -513,7 +525,7 @@ class App:
 
         return False
 
-    def trigger_event(self, event, when):
+    def trigger_event(self, event, when, **kwargs):
         """Triggers event and runs registered callbacks."""
         status = False
         bindings = self.get_event_bindings()
@@ -523,7 +535,7 @@ class App:
             callbacks = bindings[when][event]
             for cb in callbacks:
                 try:
-                    val = cb(event)
+                    val = cb(event, **kwargs)
                 except:
                     # Catch all errors in callbacks just incase
                     self.logger.error("Failed running callback: {0}".format(cb), exc_info=True)
@@ -532,11 +544,11 @@ class App:
                     status = True
         return status
 
-    def trigger_event_before(self, event):
-        return self.trigger_event(event, "before")
+    def trigger_event_before(self, event, **kwargs):
+        return self.trigger_event(event, "before", **kwargs)
 
-    def trigger_event_after(self, event):
-        return self.trigger_event(event, "after")
+    def trigger_event_after(self, event, **kwargs):
+        return self.trigger_event(event, "after", **kwargs)
 
     def toggle_fullscreen(self):
         """Toggle full screen editor."""
